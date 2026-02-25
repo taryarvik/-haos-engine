@@ -290,7 +290,7 @@ const [jackpotModal, setJackpotModal] = useState(null);
     const breakdown = [...pre.breakdown];
 
     breakdown.push(`[C] rolls = ${chaos.rolls.join("→")}`);
-    breakdown.push(`[C] Chaos x${chaos.multiplier} => ${((pre.preChaos * chaos.multiplier)).toFixed(2)}`);
+    breakdown.push(`[C] Chaos x${chaos.multiplier} => ${(pre.preChaos * chaos.multiplier).toFixed(2)}`);
     if (chaos.casino) {
       breakdown.push(`[🎰] Casino reels = ${chaos.casino.vals.join(" | ")} (6s=${chaos.casino.sixCount}) => +${chaos.casino.bonus}`);
       breakdown.push(`[🎰] Final chaos multiplier = x${chaos.multiplier}`);

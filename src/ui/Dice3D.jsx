@@ -31,12 +31,13 @@ function PipsFace({ n }) {
         return (
           <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"center", opacity: on ? 1 : 0 }}>
             <div style={{
-              width: 14,
-              height: 14,
-              borderRadius: 999,
-              background: "rgba(255,255,255,.95)",
-              boxShadow: "0 0 14px rgba(168,85,247,.65), 0 0 22px rgba(233,201,129,.20)",
-              transform: on ? "scale(1)" : "scale(.8)"
+              width: 18,
+              height: 18,
+              borderRadius: 6,
+              background: "linear-gradient(145deg, rgba(255,255,255,.95), rgba(233,201,129,.75))",
+              boxShadow: "0 0 18px rgba(168,85,247,.75), 0 0 26px rgba(233,201,129,.28)",
+              clipPath: "polygon(50% 0%, 92% 50%, 50% 100%, 8% 50%)",
+              transform: on ? "rotate(45deg) scale(1)" : "rotate(45deg) scale(.82)"
             }} />
           </div>
         );
@@ -52,8 +53,9 @@ function Face({ n, style }) {
         position:"absolute",
         inset:0,
         borderRadius: 18,
-        background: "linear-gradient(145deg, rgba(168,85,247,.92), rgba(46,16,99,.98))",
+        background: "linear-gradient(145deg, rgba(168,85,247,.92), rgba(46,16,99,.98)), radial-gradient(circle at 30% 30%, rgba(255,255,255,.12), transparent 55%), repeating-linear-gradient(45deg, rgba(255,255,255,.06) 0 2px, transparent 2px 10px)",
         border: "1px solid rgba(0,0,0,.55)",
+        outline: "1px solid rgba(255,255,255,.10)",
         boxShadow: "inset 0 0 22px rgba(255,255,255,.10), 0 18px 40px rgba(0,0,0,.35)",
         ...style
       }}
@@ -88,14 +90,14 @@ export default function Dice3D({
       onClick={onClick}
       disabled={disabled}
       className="btn"
-      style={{ borderRadius: 22, padding: 14, width: 190 }}
+      style={{ borderRadius: 22, padding: 14, width: 210 }}
       aria-label={label}
     >
-      <div style={{ perspective: 1200, width: 140, height: 140, margin: "0 auto" }}>
+      <div style={{ perspective: 1400, width: 156, height: 156, margin: "0 auto" }}>
         <motion.div
           style={{
-            width: 140,
-            height: 140,
+            width: 156,
+            height: 156,
             position: "relative",
             transformStyle: "preserve-3d",
             filter: jackpotGlow ? "drop-shadow(0 0 28px rgba(233,201,129,.35)) drop-shadow(0 0 20px rgba(168,85,247,.55))" : "drop-shadow(0 0 18px rgba(168,85,247,.45))",
@@ -103,7 +105,7 @@ export default function Dice3D({
           animate={{
             rotateX: cubeRotation.x,
             rotateY: cubeRotation.y,
-            rotateZ: isRolling ? [0, 2, -2, 1, -1, 0] : 0,
+            rotateZ: isRolling ? [0, 8, -10, 6, -6, 0] : 0,
             scale: isRolling ? [1, 1.02, 1] : 1
           }}
           transition={{
@@ -112,12 +114,12 @@ export default function Dice3D({
           }}
         >
           {/* Face positions (cube size 140 => half = 70) */}
-          <Face n={1} style={{ transform: "rotateY(0deg) translateZ(70px)" }} />
-          <Face n={2} style={{ transform: "rotateX(90deg) translateZ(70px)" }} />
-          <Face n={3} style={{ transform: "rotateY(-90deg) translateZ(70px)" }} />
-          <Face n={4} style={{ transform: "rotateY(90deg) translateZ(70px)" }} />
-          <Face n={5} style={{ transform: "rotateX(-90deg) translateZ(70px)" }} />
-          <Face n={6} style={{ transform: "rotateX(180deg) translateZ(70px)" }} />
+          <Face n={1} style={{ transform: "rotateY(0deg) translateZ(78px)" }} />
+          <Face n={2} style={{ transform: "rotateX(90deg) translateZ(78px)" }} />
+          <Face n={3} style={{ transform: "rotateY(-90deg) translateZ(78px)" }} />
+          <Face n={4} style={{ transform: "rotateY(90deg) translateZ(78px)" }} />
+          <Face n={5} style={{ transform: "rotateX(-90deg) translateZ(78px)" }} />
+          <Face n={6} style={{ transform: "rotateX(180deg) translateZ(78px)" }} />
         </motion.div>
       </div>
 

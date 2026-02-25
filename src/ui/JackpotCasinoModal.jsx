@@ -1,45 +1,55 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-function Reel({ value, spinning, seed }) {
-  // Make a long strip of numbers 1..6 repeated to animate like a slot drum
+const CELL = 44;
+
+function Reel({ startValue, targetValue, spinning, loops, spinKey }) {
+  const baseOffset = useMemo(() => 12 + Math.floor(Math.random() * 12), []);
   const strip = useMemo(() => {
     const arr = [];
-    for (let i = 0; i < 18; i++) arr.push((i % 6) + 1);
+    for (let i = 0; i < 72; i++) arr.push((i % 6) + 1);
     return arr;
   }, []);
 
-  const finalIndex = 12 + ((value - 1) % 6); // near end so it stops "down the strip"
-  const yFinal = -finalIndex * 44;
+  const startIdx = baseOffset + ((startValue - 1) % 6);
+  const delta = (targetValue - startValue + 6) % 6;
+  const totalSteps = loops * 6 + delta;
 
-  const spinY = -(strip.length - 1) * 44; // full spin
+  const yStart = -startIdx * CELL;
+  const yEnd = -(startIdx + totalSteps) * CELL;
 
   return (
     <div style={{
-      width: 72,
+      width: 78,
       height: 132,
       borderRadius: 18,
       overflow: "hidden",
       background: "rgba(0,0,0,.55)",
       border: "1px solid rgba(255,255,255,.10)",
-      boxShadow: "inset 0 0 18px rgba(0,0,0,.6), 0 0 24px rgba(168,85,247,.25)"
+      boxShadow: "inset 0 0 18px rgba(0,0,0,.6), 0 0 24px rgba(168,85,247,.25)",
+      position: "relative"
     }}>
+      <div style={{
+        position:"absolute", left:0, right:0, top:"50%", transform:"translateY(-50%)",
+        height: 46,
+        borderTop: "1px solid rgba(255,255,255,.10)",
+        borderBottom: "1px solid rgba(255,255,255,.10)",
+        background: "linear-gradient(90deg, rgba(168,85,247,.12), rgba(233,201,129,.10), rgba(168,85,247,.12))",
+        pointerEvents:"none"
+      }} />
       <motion.div
-        key={seed}
-        initial={{ y: 0 }}
-        animate={{ y: spinning ? [0, spinY] : yFinal }}
-        transition={{
-          duration: spinning ? 0.75 : 0.5,
-          ease: spinning ? "linear" : [0.2, 0.9, 0.2, 1]
-        }}
+        key={spinKey}
+        initial={{ y: yStart }}
+        animate={{ y: spinning ? yEnd : yStart }}
+        transition={{ duration: spinning ? 1.05 : 0.001, ease: "linear" }}
       >
         {strip.map((n, i) => (
           <div key={i} style={{
-            height: 44,
+            height: CELL,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 28,
+            fontSize: 30,
             fontWeight: 900,
             color: "rgba(255,245,215,1)",
             textShadow: "0 0 12px rgba(168,85,247,.65), 0 0 18px rgba(233,201,129,.25)"
@@ -54,31 +64,33 @@ function Reel({ value, spinning, seed }) {
 
 export default function JackpotCasinoModal({ open, onResolve, baseMult }) {
   const [spinning, setSpinning] = useState(false);
-  const [vals, setVals] = useState([1,1,1]);
-  const [seed, setSeed] = useState(0);
+  const [vals, setVals] = useState(() => [1,1,1].map(() => 1 + Math.floor(Math.random() * 6)));
+  const [targets, setTargets] = useState(vals);
+  const [spinKey, setSpinKey] = useState(0);
 
   const sixCount = vals.filter(v => v === 6).length;
-  const mappedMult = 3 + sixCount; // 0->x3, 1->x4, 2->x5, 3->x6
-  const bonus = mappedMult - 3; // equals sixCount
+  const mappedMult = 3 + sixCount;
+  const bonus = mappedMult - 3;
 
   const spin = () => {
     if (spinning) return;
-    setSpinning(true);
-    setSeed(s => s + 1);
 
-    // pick target values now, reveal after stop
-    const next = [1,1,1].map(() => 1 + Math.floor(Math.random() * 6));
-    // animate with small stagger via separate timeouts
-    setTimeout(() => setVals(next), 680);
+    const nextTargets = [1,1,1].map(() => 1 + Math.floor(Math.random() * 6));
+    setTargets(nextTargets);
+
+    setSpinning(true);
+    setSpinKey(k => k + 1);
 
     setTimeout(() => {
+      setVals(nextTargets);
       setSpinning(false);
-    }, 820);
+    }, 1120);
   };
 
   const apply = () => {
     if (spinning) return;
-    onResolve({ vals, sixCount, bonus });
+    const finalSixCount = vals.filter(v => v === 6).length;
+    onResolve({ vals, sixCount: finalSixCount, bonus: finalSixCount });
   };
 
   return (
@@ -89,46 +101,39 @@ export default function JackpotCasinoModal({ open, onResolve, baseMult }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          style={{ zIndex: 80 }}
         >
           <motion.div
             className="modal"
-            initial={{ scale: 0.92, opacity: 0, y: 8 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.96, opacity: 0, y: 10 }}
-            transition={{ type: "spring", stiffness: 220, damping: 18 }}
+            initial={{ y: 20, opacity: 0, scale: 0.96 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 20, opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.18 }}
+            style={{ maxWidth: 520 }}
           >
-            <div className="panel-inner">
-              <h3>JACKPOT BONUS</h3>
-              <div className="hint">Казино-бонус после джекпота: 0×6 → ×3, 1×6 → ×4, 2×6 → ×5, 3×6 → ×6</div>
-              <div className="ruleline" />
-
-              <div className="row" style={{ justifyContent:"center", gap: 12 }}>
-                <Reel value={vals[0]} spinning={spinning} seed={seed*10+1} />
-                <Reel value={vals[1]} spinning={spinning} seed={seed*10+2} />
-                <Reel value={vals[2]} spinning={spinning} seed={seed*10+3} />
+            <div style={{ textAlign:"center", marginBottom: 10 }}>
+              <div className="h2" style={{ marginBottom: 6 }}>🎰 JACKPOT BONUS</div>
+              <div className="muted" style={{ fontSize: 12 }}>
+                0×6 → x3 | 1×6 → x4 | 2×6 → x5 | 3×6 → x6
               </div>
-
-              <div className="ruleline" />
-              <div className="row" style={{ justifyContent:"space-between", alignItems:"center" }}>
-                <div>
-                  <div className="label">Base jackpot multiplier</div>
-                  <div className="big">×{baseMult}</div>
-                </div>
-                <div style={{ textAlign:"right" }}>
-                  <div className="label">Bonus result</div>
-                  <div className="big">+{bonus} (→ ×{mappedMult})</div>
-                </div>
+              <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                Base jackpot: x{baseMult} • bonus: +{bonus} • bonus-mult: x{mappedMult}
               </div>
+            </div>
 
-              <div className="ruleline" />
-              <div className="row" style={{ justifyContent:"space-between" }}>
-                <button className="btn btn-gold" onClick={spin} disabled={spinning}>
-                  {spinning ? "КРУТИТСЯ..." : "КРУТИТЬ 3 СЛОТА"}
-                </button>
-                <button className="btn btn-danger" onClick={apply} disabled={spinning}>
-                  ПРИМЕНИТЬ
-                </button>
-              </div>
+            <div style={{ display:"flex", gap: 12, justifyContent:"center", margin: "14px 0 10px" }}>
+              <Reel startValue={vals[0]} targetValue={targets[0]} spinning={spinning} loops={5} spinKey={spinKey} />
+              <Reel startValue={vals[1]} targetValue={targets[1]} spinning={spinning} loops={6} spinKey={spinKey} />
+              <Reel startValue={vals[2]} targetValue={targets[2]} spinning={spinning} loops={7} spinKey={spinKey} />
+            </div>
+
+            <div style={{ display:"flex", gap: 10, justifyContent:"center", marginTop: 8 }}>
+              <button className="btn" onClick={spin} disabled={spinning}>
+                {spinning ? "SPINNING..." : "SPIN"}
+              </button>
+              <button className="btn btn-accent" onClick={apply} disabled={spinning}>
+                APPLY
+              </button>
             </div>
           </motion.div>
         </motion.div>

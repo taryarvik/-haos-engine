@@ -143,11 +143,11 @@ export default function BattlefieldPage({
                         initial={{ opacity: 0, y: 18, scale: 0.9, filter: "blur(2px)" }}
                         animate={{
                           opacity: 1,
-                          y: -70,
+                          y: -58,
                           scale: p.kind === "jackpot" ? 1.35 : 1.12,
                           filter: "blur(0px)"
                         }}
-                        exit={{ opacity: 0, y: -110, scale: 0.95, filter: "blur(3px)" }}
+                        exit={{ opacity: 0, y: -98, scale: 0.95, filter: "blur(3px)" }}
                         transition={{ duration: 0.75, ease: "easeOut" }}
                         style={{
                           position: "absolute",
